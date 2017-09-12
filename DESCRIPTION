@@ -1,10 +1,10 @@
 Package: cameraDIMS
 Type: Package
-Title: hack of camera to work with dims data
-Version: 0.99.0
+Title: modification of CAMERA R package to work with dims data
+Version: 0.1.0
 Date: 2016-04-10
-Author: Thomas N. Lawson, Ralf Weber, Martin Jones, Mark Viant, Warwick Dunn
+Author: Thomas N. Lawson, Martin Jones, Ralf Weber, Mark Viant, Warwick Dunn
 Maintainer: Thomas N. Lawson <thomas.nigel.lawson@gmail.com>
-Description: Hack of CAMERA to work with DIMS data
+Description: modification of CAMERA R package to work with dims data
 License: GPL (>= 2)
 
