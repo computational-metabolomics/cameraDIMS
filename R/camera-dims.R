@@ -12,9 +12,14 @@
 #' @param data data.frame = two column data frame consisting of mz values and intensity
 #' @param params_iso list = a list of all the parameters used for the isotope calculations
 #' @param params_iso list = a list of all the parameters used for the adduct calculations
-#' @param rule_pth character = path of the rules used for adducts. If NULL will use defaults
+#' @param rule_type character = [primary, extended, user]
+#' @param rule_pth character = path of the rules used for adducts. only required for rule type 'user'
+#' @param rule_sep character = seperator for rulepath
+#' @param rule_export boolean = If TRUE will export the ruleset used
 #' @export
-cameraDIMS <- function(data, params_iso, params_adduct, rule_pth=NULL){
+#'
+cameraDIMS <- function(data, params_iso, params_adduct, rule_type='extended', rule_pth=NULL, rule_sep='\t',
+                       rule_export=FALSE){
   if(nrow(data.frame(data))<=1){
     data <- data.frame(data, row.names=NULL)
     data$isotopes = ""
@@ -23,39 +28,65 @@ cameraDIMS <- function(data, params_iso, params_adduct, rule_pth=NULL){
     return(list("peaklist"=data, "annoID"=NA))
   }
 
-  if(is.null(rule_pth)){
-    if(params_adduct$polarity=="pos"){
-      default_rules <- system.file("rules", "extended_adducts_pos.csv", package = "cameraDIMS")
-      params_adduct$polarity = "+"
-
-    }else if (params_adduct$polarity=="neg") {
-      default_rules <- system.file("rules", "CAMERA_rules_NegFinal_PlusLi.csv", package = "cameraDIMS")
-      params_adduct$polarity = "-"
-    }
-    if(default_rules==""){
-      print("No default rule file")
-      return()
-    }
-    ruleF <- read.csv(default_rules, header=TRUE)
-  }else{
-    if(params_adduct$polarity=="pos"){
-      params_adduct$polarity = "+"
-
-    }else if (params_adduct$polarity=="neg") {
-      params_adduct$polarity = "-"
-    }
-
-    ruleF <- read.csv(rule_pth, header=TRUE)
+  if(params_adduct$polarity=="pos"){
+    params_adduct$polarity = "+"
+  }else if (params_adduct$polarity=="neg") {
+    params_adduct$polarity = "-"
   }
+
+  # remove any previous annotation
+  data <- data[ , -which(names(data) %in% c("isotopes","adduct"))]
+
+
+  if(rule_type=='extended'){
+
+    if(params_adduct$polarity=="+"){
+      ruleF <- read.table(system.file("rules", "extended_adducts_pos.txt", package = "cameraDIMS"), sep=rule_sep,
+                          header=TRUE)
+    }else if (params_adduct$polarity=="-") {
+      ruleF <- read.table(system.file("rules", "extended_adducts_neg.txt", package = "cameraDIMS"), sep=rule_sep,
+                          header=TRUE)
+    }
+  }else if (rule_type=='primary'){
+    print('CHECKKKK')
+    print(params_adduct$polarity)
+    if(params_adduct$polarity=="+"){
+      ruleF <- read.table(system.file("rules", "primary_adducts_pos.txt", package = "cameraDIMS"), sep=rule_sep,
+                          header=TRUE)
+    }else if (params_adduct$polarity=="-") {
+      ruleF <- read.table(system.file("rules", "primary_adducts_neg.txt", package = "cameraDIMS"), sep=rule_sep,
+                          header=TRUE)
+    }
+  }else if (rule_type=='user'){
+    if(!is.null(rule_pth)){
+      ruleF <- read.table(rule_pth, header = TRUE, sep=rule_sep)
+    }else{
+      print('rule_type == user, then a valid rule_pth is required')
+      return(0)
+    }
+  }else{
+    print('rule_type needs to be either [primary, extended, user]')
+    return(0)
+  }
+
+
   print('number of adduct rules:')
   print(nrow(ruleF))
+  print('rules head:')
+  print(head(ruleF))
   data <- data[order(data$mz),]
+  print('head data:')
+  print(head(data))
 
   # Do the isotope annotation
   isotopes <- dims_isotopes(data, params_iso)
 
   # do the adduct annotation
   annotated_out <- dims_adducts(data, ruleF, isotopes, params_adduct)
+
+  if (rule_export){
+    annotated_out[[3]] = ruleF
+  }
 
   return(annotated_out)
 }
