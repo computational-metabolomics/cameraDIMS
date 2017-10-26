@@ -72,7 +72,7 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
     hits.iso <- hits%/%2 + 1;
     #check occurence of first isotopic peak
     for(iso in 1:min(params$maxiso,ncol(hits.iso))){
-      hit <- apply(hits.iso,1, function(x) any(CAMERA:::naOmit(x)==iso))
+      hit <- apply(hits.iso,1, function(x) any(naOmit(x)==iso))
       hit[which(is.na(hit))] <- TRUE
       if(all(hit)) break;
       hits.iso[!hit,] <- t(apply(hits.iso[!hit,,drop=FALSE],1, function(x) {
@@ -755,7 +755,7 @@ massDiffMatrixNL <- function(m,neutralloss){
 }
 
 
-#naOmit <- function(x) {
-#  return (x[!is.na(x)]);
-#}
+naOmit <- function(x) {
+  return (x[!is.na(x)]);
+}
 

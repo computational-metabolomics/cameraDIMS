@@ -35,7 +35,7 @@ cameraDIMS <- function(data, params_iso, params_adduct, rule_type='extended', ru
   }
 
   # remove any previous annotation
-  data <- data[ , -which(names(data) %in% c("isotopes","adduct"))]
+  data <- data[ , !(names(data) %in% c("isotopes","adduct"))]
 
 
   if(rule_type=='extended'){
@@ -48,7 +48,6 @@ cameraDIMS <- function(data, params_iso, params_adduct, rule_type='extended', ru
                           header=TRUE)
     }
   }else if (rule_type=='primary'){
-    print('CHECKKKK')
     print(params_adduct$polarity)
     if(params_adduct$polarity=="+"){
       ruleF <- read.table(system.file("rules", "primary_adducts_pos.txt", package = "cameraDIMS"), sep=rule_sep,
@@ -74,9 +73,10 @@ cameraDIMS <- function(data, params_iso, params_adduct, rule_type='extended', ru
   print(nrow(ruleF))
   print('rules head:')
   print(head(ruleF))
+  print(head(data))
   data <- data[order(data$mz),]
   print('head data:')
-  print(head(data))
+
 
   # Do the isotope annotation
   isotopes <- dims_isotopes(data, params_iso)
