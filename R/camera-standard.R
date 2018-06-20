@@ -1,3 +1,27 @@
+match_ranges <- function(IM, MI, max.index){
+  match_m <- matrix(ncol=max.index, nrow = nrow(IM))
+  for (i in 1:nrow(IM)){
+    x <- IM[i,]
+    ranges <- split(x, ceiling(seq_along(x)/2))
+    df <- data.frame(t(data.frame(ranges)))
+    colnames(df) <- c('start', 'end')
+    df$id <- 1:nrow(df)
+
+
+    out <- cut(MI[1:max.index], t(df[,c('start', 'end')]))
+    levels(out)[c(FALSE,TRUE)]  <- NA
+    match_m[i, ] <- df$id[out]
+
+
+  }
+
+  return(match_m)
+
+
+
+
+}
+
 calcIsotopeMatrix <- function(maxiso=4){
   if(!is.numeric(maxiso)){
     stop("Parameter maxiso is not numeric!\n")
@@ -64,12 +88,20 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
     #TODO: Find better solution and give feedback to user!
     IM <- t(apply(IM,1,sort))
     #find peaks, which m/z value is in isotope interval
-    hits <- t(apply(IM, 1, function(x){ findInterval(MI[1:max.index], x)}))
+
+    #hits <- t(apply(IM, 1, function(x){ findInterval(MI[1:max.index], x)}))
+    hits <- match_ranges(IM, MI, max.index)
+
     rownames(hits) <- c(1:nrow(hits))
     colnames(hits) <- c(1:ncol(hits))
     hits[which(hits==0)] <-NA
     hits <- hits[, -1, drop=FALSE]
-    hits.iso <- hits%/%2 + 1;
+    #hits.iso <- hits%/%2 + 1;
+
+
+    hits.iso <- hits
+
+
     #check occurence of first isotopic peak
     for(iso in 1:min(params$maxiso,ncol(hits.iso))){
       hit <- apply(hits.iso,1, function(x) any(naOmit(x)==iso))
@@ -484,7 +516,7 @@ addFragments <- function(hypothese, rules, mz){
 
   for(massgrp in unique(hypothese[, "massgrp"])){
     for(index in which(hypothese[, "ruleID"] %in% unique(fragments[, "parent"]) &
-                         hypothese[, "massgrp"] == massgrp)){
+                       hypothese[, "massgrp"] == massgrp)){
       massID <- hypothese[index, "massID"]
       ruleID <- hypothese[index, "ruleID"]
       indexFrag <- which(fragments[, "parent"] == ruleID)
@@ -599,7 +631,7 @@ checkOidCausality <- function(hypothese,rules){
 
     for(hyp.nmol.idx in hyp.nmol){
       if(length(indi <- which(hypothese[, "mass"] == hypothese[hyp.nmol.idx, "mass"] &
-                                abs(hypothese[, "charge"]) == hypothese[, "nmol"])) > 1){
+                              abs(hypothese[, "charge"]) == hypothese[, "nmol"])) > 1){
         if(hyp.nmol.idx %in% indi){
           #check if [M+H] [2M+2H]... annotate the same molecule
           massdiff <- rules[hypothese[indi, "ruleID"], "massdiff"] /
@@ -758,4 +790,3 @@ massDiffMatrixNL <- function(m,neutralloss){
 naOmit <- function(x) {
   return (x[!is.na(x)]);
 }
-
