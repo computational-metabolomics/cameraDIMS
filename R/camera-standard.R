@@ -131,7 +131,8 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
     #TODO: unique or not????
     #isolength <- apply(hits, 1, function(x) length(which(unique(x) %% 2 !=0)))
     #isohits - for each charge, length of peak within intervals
-    isohits <- lapply(1:nrow(hits), function(x) which(hits[x, ] %% 2 !=0))
+    #isohits <- lapply(1:nrow(hits), function(x) which(hits[x, ] %% 2 !=0))
+    isohits <- lapply(1:nrow(hits), function(x) which(hits[x, ] >0))
     isolength <- sapply(isohits, length)
     #Check if any result is found
     if(all(isolength==0)){
