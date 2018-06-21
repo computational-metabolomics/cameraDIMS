@@ -1,7 +1,7 @@
 Package: cameraDIMS
 Type: Package
 Title: modification of CAMERA R package to work with dims data
-Version: 0.2.6
+Version: 0.2.7
 Date: 2018-06-20
 Author: Thomas N. Lawson, Martin Jones, Ralf Weber, Mark Viant, Warwick Dunn
 Maintainer: Thomas N. Lawson <thomas.nigel.lawson@gmail.com>
