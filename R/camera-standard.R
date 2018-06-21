@@ -152,7 +152,8 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
           }
           charge <- as.numeric(row.names(hits)[iso])
           int.c12 <- int[j, sample.index]
-          isotopePeak <- hits[iso,isohits[[iso]][candidate]]%/%2 + 1;
+          #isotopePeak <- hits[iso,isohits[[iso]][candidate]]%/%2 + 1;
+          isotopePeak <- hits[iso,isohits[[iso]][candidate]];
           if(isotopePeak == 1){
             #first isotopic peak, check C13 rule
             int.c13 <- int[isohits[[iso]][candidate]+j, sample.index];
@@ -163,10 +164,10 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
               inten.max <- int.c12 * numC * 0.011; #highest possible intensity
               inten.min <- int.c12 * 1 * 0.011; #lowest possible intensity
               if((int.c13 < inten.max && int.c13 > inten.min) || !params$filter){
-                candidate.matrix[iso,candidate * 2 - 1] <- candidate.matrix[iso,candidate * 2 - 1] + 1
-                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+                candidate.matrix[iso,candidate - 1] <- candidate.matrix[iso,candidate - 1] + 1
+                candidate.matrix[iso,candidate ] <- candidate.matrix[iso,candidate ] + 1
               }else{
-                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+                candidate.matrix[iso,candidate ] <- candidate.matrix[iso,candidate ] + 1
               }
             } else {
               #todo
@@ -180,13 +181,13 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
                             (int.c12 * params$IM[isotopePeak,"intmax"]/100))
               #filter Cx isotopic peaks muss be smaller than c12
               if(int.cx < intrange[2] && int.cx > intrange[1]){
-                candidate.matrix[iso,candidate * 2 - 1] <- candidate.matrix[iso,candidate * 2 - 1] + 1
-                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+                candidate.matrix[iso,candidate  - 1] <- candidate.matrix[iso,candidate  - 1] + 1
+                candidate.matrix[iso,candidate  ] <- candidate.matrix[iso,candidate ] + 1
               }else{
-                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+                candidate.matrix[iso,candidate  ] <- candidate.matrix[iso,candidate ] + 1
               }
             } else {
-              candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+              candidate.matrix[iso,candidate  ] <- candidate.matrix[iso,candidate ] + 1
             }#end int.available
           }#end if first isotopic peak
         }#for loop samples
