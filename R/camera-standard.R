@@ -145,6 +145,7 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
     candidate.matrix <- matrix(0, nrow=length(isohits), ncol=max(isolength)*2);
     for(iso in 1:length(isohits)){
       for(candidate in 1:length(isohits[[iso]])){
+        print(paste(j, iso, candidate))
         for(sample.index in c(1:ncol(int))){
           #Test if C12 Peak is NA
           if(!is.na(int[j, sample.index])){
@@ -155,20 +156,49 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
           #isotopePeak <- hits[iso,isohits[[iso]][candidate]]%/%2 + 1;
           isotopePeak <- hits[iso,isohits[[iso]][candidate]];
           if(isotopePeak == 1){
+            if(j == 175){
+                print(paste(j, 'isotope peak(1)', iso))
+                print(isohits)
+                print(int.c12)
+                print(hits)
+            }
             #first isotopic peak, check C13 rule
+
             int.c13 <- int[isohits[[iso]][candidate]+j, sample.index];
+
             int.available <- all(!is.na(c(int.c12, int.c13)))
             if (int.available){
               theo.mass <- spectra[j, 1] * charge; #theoretical mass
+
+
+
               numC <- abs(round(theo.mass / 12)); #max. number of C in molecule
               inten.max <- int.c12 * numC * 0.011; #highest possible intensity
               inten.min <- int.c12 * 1 * 0.011; #lowest possible intensity
-              if((int.c13 < inten.max && int.c13 > inten.min) || !params$filter){
-                candidate.matrix[iso,candidate - 1] <- candidate.matrix[iso,candidate - 1] + 1
-                candidate.matrix[iso,candidate ] <- candidate.matrix[iso,candidate ] + 1
-              }else{
-                candidate.matrix[iso,candidate ] <- candidate.matrix[iso,candidate ] + 1
+              if(j == 175){
+                print(int.c13)
+                print(inten.max)
+                print(inten.min)
+                print(candidate)
+                print(candidate.matrix)
               }
+
+
+              if((int.c13 < inten.max && int.c13 > inten.min) || !params$filter){
+                if(j == 175){
+                  print('PASS TEST')
+                }
+                candidate.matrix[iso,candidate * 2 - 1] <- candidate.matrix[iso,candidate * 2 - 1] + 1
+                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+              }else{
+                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
+              }
+
+              if(j == 175){
+                print(candidate.matrix)
+              }
+
+
             } else {
               #todo
             }
@@ -181,13 +211,13 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
                             (int.c12 * params$IM[isotopePeak,"intmax"]/100))
               #filter Cx isotopic peaks muss be smaller than c12
               if(int.cx < intrange[2] && int.cx > intrange[1]){
-                candidate.matrix[iso,candidate  - 1] <- candidate.matrix[iso,candidate  - 1] + 1
-                candidate.matrix[iso,candidate  ] <- candidate.matrix[iso,candidate ] + 1
+                candidate.matrix[iso,candidate * 2 - 1] <- candidate.matrix[iso,candidate * 2 - 1] + 1
+                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
               }else{
-                candidate.matrix[iso,candidate  ] <- candidate.matrix[iso,candidate ] + 1
+                candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
               }
             } else {
-              candidate.matrix[iso,candidate  ] <- candidate.matrix[iso,candidate ] + 1
+              candidate.matrix[iso,candidate * 2 ] <- candidate.matrix[iso,candidate * 2] + 1
             }#end int.available
           }#end if first isotopic peak
         }#for loop samples
@@ -197,6 +227,15 @@ findIsotopesPspec <- function(isomatrix, mz, ipeak, int, params){
     candidate.ratio <- candidate.matrix[, seq(from=1, to=ncol(candidate.matrix),
                                               by=2)] / candidate.matrix[, seq(from=2,
                                                                               to=ncol(candidate.matrix), by=2)];
+
+
+    if(j == 175){
+      print(candidate.ratio)
+      print( candidate.matrix[, seq(from=1, to=ncol(candidate.matrix),
+                                    by=2)])
+    }
+
+
     if(is.null(dim(candidate.ratio))){
       candidate.ratio <- matrix(candidate.ratio, nrow=nrow(candidate.matrix))
     }
